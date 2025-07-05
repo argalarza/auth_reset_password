@@ -11,7 +11,8 @@ exports.requestReset = async (req, res) => {
   const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '15m' });
 
   // CORREGIDO: enviar al frontend
-  const link = `http://localhost:5173/reset-password?token=${token}`;
+const link = `http://54.175.97.19/reset-password?token=${token}`;
+
 
   await transporter.sendMail({
     from: `"Soporte" <${process.env.EMAIL_USER}>`,
