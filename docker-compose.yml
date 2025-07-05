@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  reset-password-service:
+    build: .
+    ports:
+      - "4004:4004"
+    environment:
+      - PORT=4004
+      - MYSQL_DB_HOST=${MYSQL_DB_HOST}
+      - MYSQL_PORT=${MYSQL_DB_PORT}
+      - MYSQL_DB_USER=${MYSQL_DB_USER}
+      - MYSQL_DB_PASSWORD=${MYSQL_DB_PASSWORD}
+      - MYSQL_DB_NAME=${MYSQL_DB_NAME}
+      - JWT_SECRET=${JWT_SECRET}
+      - EMAIL_USER=${EMAIL_USER}
+      - EMAIL_PASS=${EMAIL_PASS}
+    restart: unless-stopped

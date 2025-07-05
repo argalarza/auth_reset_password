@@ -1,0 +1,73 @@
+name: 🚀 Build & Deploy Login Service to EC2
+
+on:
+  push:
+    branches:
+      - test  # Esta rama activará el despliegue....
+
+jobs:
+  build-and-deploy:
+    name: 🐳 Build & Push Docker Image + ☁️ Deploy to EC2
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📦 Clonar repositorio
+        uses: actions/checkout@v3
+
+      - name: 🔧 Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔐 Iniciar sesión en Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: 🛠️ Construir y subir imagen Docker
+        run: |
+          echo "📦 Construyendo imagen login-service..."
+          docker build -t agente47/login-service:latest ./services/login2
+
+          echo "☁️ Subiendo imagen a Docker Hub..."
+          docker push agente47/login-service:latest
+
+      - name: 🚀 Desplegar en EC2 por SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            echo "📝 Creando archivo .env.login-service..."
+            cat <<EOF | sudo tee /home/ec2-user/.env.login-service
+            MYSQL_DB_HOST=50.16.111.165
+            MYSQL_DB_PORT=3306
+            MYSQL_DB_USER=serious
+            MYSQL_DB_PASSWORD=123456
+            MYSQL_DB_NAME=users_db
+            JWT_SECRET=mysecretkey1234
+            PORT=4002
+            RECAPTCHA_SECRET=6LcT524rAAAAAMmIhgD1THXQirxGRXtABvE01mAS
+            GOOGLE_CLIENT_ID=1008167384967-nfl2rnbjcn126bgsavbte6uqc6qqojqd.apps.googleusercontent.com
+            FACEBOOK_APP_ID=709794134871021
+            EOF
+
+            echo "📥 Descargando imagen desde Docker Hub..."
+            sudo docker pull agente47/login-service:latest
+
+            echo "🔌 Verificando red 'my_global_network'..."
+            sudo docker network inspect my_global_network >/dev/null 2>&1 || \
+              sudo docker network create my_global_network
+
+            echo "🛑 Deteniendo contenedor anterior (si existe)..."
+            sudo docker stop login-service || true
+            sudo docker rm login-service || true
+
+            echo "🚀 Iniciando contenedor actualizado..."
+            sudo docker run -d --name login-service \
+              --env-file /home/ec2-user/.env.login-service \
+              -p 4002:4002 \
+              --network my_global_network \
+              agente47/login-service:latest
+
+            echo "✅ Despliegue completadoo."
