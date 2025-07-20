@@ -27,7 +27,7 @@ jobs:
           node-version: '18'
 
       - name: 📦 Instalar dependencias
-        run: npm ci
+        run: npm install
 
       - name: 🧪 Ejecutar pruebas y generar cobertura
         run: |
