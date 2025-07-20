@@ -3,7 +3,7 @@ name: SonarQube Scan - reset-password-service
 on:
   push:
     branches:
-      - tesL
+      - test
     paths:
       - 'auth_reset_password/**'
       - '.github/workflows/qa.yml'
