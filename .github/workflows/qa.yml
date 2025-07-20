@@ -3,7 +3,7 @@ name: SonarQube Scan - reset-password-service
 on:
   push:
     branches:
-      - test
+      - tesL
     paths:
       - 'auth_reset_password/**'
       - '.github/workflows/qa.yml'
@@ -15,7 +15,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: auth_reset_password
+        working-directory: .
 
     steps:
       - name: 🧾 Clonar repositorio
@@ -27,7 +27,7 @@ jobs:
           node-version: '18'
 
       - name: 📦 Instalar dependencias
-        run: npm install
+        run: npm ci
 
       - name: 🧪 Ejecutar pruebas y generar cobertura
         run: |
